@@ -1,0 +1,60 @@
+{
+  "name": "LotkaVolterra",
+  "dimension": 2,
+  "equations": [
+    {
+      "type": "Sub",
+      "data": [
+        {
+          "type": "Mul",
+          "data": [
+            { "type": "Constant", "data": 1.5 },
+            { "type": "State", "data": 0 }
+          ]
+        },
+        {
+          "type": "Mul",
+          "data": [
+            { "type": "Constant", "data": 1.0 },
+            {
+              "type": "Mul",
+              "data": [
+                { "type": "State", "data": 0 },
+                { "type": "State", "data": 1 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Sub",
+      "data": [
+        {
+          "type": "Mul",
+          "data": [
+            { "type": "Constant", "data": 1.0 },
+            {
+              "type": "Mul",
+              "data": [
+                { "type": "State", "data": 0 },
+                { "type": "State", "data": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Mul",
+          "data": [
+            { "type": "Constant", "data": 3.0 },
+            { "type": "State", "data": 1 }
+          ]
+        }
+      ]
+    }
+  ],
+  "params": [],
+  "default_y0": [10.0, 5.0],
+  "default_t_span": [0.0, 15.0],
+  "default_dt": 0.005
+}

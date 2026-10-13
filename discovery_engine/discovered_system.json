@@ -1,0 +1,25 @@
+{
+  "name": "Free_Fall_(Newtons_Law:_F_=_ma)",
+  "dimension": 2,
+  "is_pde": false,
+  "equations": [
+    {
+      "type": "State",
+      "data": 1
+    },
+    {
+      "type": "Constant",
+      "data": -9.806055341044365
+    }
+  ],
+  "params": [],
+  "default_y0": [
+    10.0,
+    0.0
+  ],
+  "default_t_span": [
+    0.0,
+    1.0
+  ],
+  "default_dt": 0.05
+}
