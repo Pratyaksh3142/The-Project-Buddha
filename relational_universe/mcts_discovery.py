@@ -1,12 +1,17 @@
 """
-Level 0: MCTS Discovery Loop for Relational Universes
+Level 0: Generative MCTS Discovery Loop for Relational Universes
 
-Connects the Relational Substrate, Invariant Referee, Neural Intuition Brain,
-and Continuum Extractor into an autonomous discovery pipeline.
+Completely open-ended, non-hardcoded rule discovery:
+  - Rules are dynamically generated and mutated (edge additions, removals, rewirings).
+  - Evaluated on the physical substrate by InvariantReferee (pure graph hop measurements).
+  - Neural Intuition Brain learns through continuous JAX backprop.
+  - EVERY single tested rule, topology, and measurement is logged to 'discovery_trace.log'.
 """
 
 from __future__ import annotations
-import math
+import os
+import json
+import random
 from typing import List, Tuple, Dict, Optional
 import numpy as np
 import jax
@@ -19,69 +24,101 @@ from relational_universe.neural_intuition import init_intuition_brain
 from relational_universe.extractor import ContinuumExtractor
 
 
+LOG_FILE = os.path.join(os.path.dirname(__file__), "discovery_trace.log")
+
+
 def rule_to_features(rule: RewriteRule, feature_dim: int = 16) -> np.ndarray:
     """Encodes a discrete rewrite rule into a normalized feature vector for the neural brain."""
     feat = np.zeros(feature_dim, dtype=np.float32)
-    # Encode edge counts and node degrees
     feat[0] = len(rule.pattern_l)
     feat[1] = len(rule.pattern_r)
     idx = 2
     for s, t in rule.pattern_l:
         if idx < feature_dim - 1:
-            feat[idx] = s + 1
-            feat[idx + 1] = t + 1
+            feat[idx] = float(s + 1)
+            feat[idx + 1] = float(t + 1)
             idx += 2
     for s, t in rule.pattern_r:
         if idx < feature_dim - 1:
-            feat[idx] = s + 1
-            feat[idx + 1] = t + 1
+            feat[idx] = float(s + 1)
+            feat[idx + 1] = float(t + 1)
             idx += 2
     return feat
 
 
-def generate_candidate_rules() -> List[RewriteRule]:
-    """Generates a small family of foundational relational rewrite rules."""
-    candidates = [
-        # Rule 1: Associative Diamond Expansion (Confluent, stable 3D growth)
-        RewriteRule(
-            pattern_l=[(0, 1), (1, 2)],
-            pattern_r=[(0, 3), (3, 2), (1, 3)],
-        ),
-        # Rule 2: Pure Cycle Split
-        RewriteRule(
-            pattern_l=[(0, 1), (1, 2)],
-            pattern_r=[(0, 1), (1, 3), (3, 2)],
-        ),
-        # Rule 3: Collapsing Dead Rule (Anti-example)
-        RewriteRule(
-            pattern_l=[(0, 1), (1, 2)],
-            pattern_r=[(0, 0)],
-        ),
-        # Rule 4: Hyper-Explosive Rule (Anti-example)
-        RewriteRule(
-            pattern_l=[(0, 1), (1, 2)],
-            pattern_r=[(0, 3), (3, 0), (1, 3), (3, 1), (2, 3), (3, 2)],
-        ),
-    ]
-    return candidates
+class RuleMutator:
+    """
+    Generative MCTS Action Space: Mutates graph rewrite rules by adding,
+    removing, or rewiring edges on the right-hand pattern R.
+    """
+    def __init__(self, max_nodes: int = 4):
+        self.max_nodes = max_nodes
+
+    def random_rule(self, min_edges_r: int = 2, max_edges_r: int = 4) -> RewriteRule:
+        """Generates a novel candidate rule from pure random topology."""
+        pattern_l = [(0, 1), (1, 2)]
+        num_edges_r = random.randint(min_edges_r, max_edges_r)
+        pattern_r = []
+        possible_nodes = list(range(self.max_nodes))
+        for _ in range(num_edges_r):
+            s = random.choice(possible_nodes)
+            t = random.choice(possible_nodes)
+            if s != t and (s, t) not in pattern_r:
+                pattern_r.append((s, t))
+        if not pattern_r:
+            pattern_r = [(0, 3), (3, 2)]
+        return RewriteRule(pattern_l=pattern_l, pattern_r=pattern_r)
+
+    def mutate_rule(self, rule: RewriteRule) -> RewriteRule:
+        """Applies a discrete topological mutation to rule pattern R."""
+        pattern_r = list(rule.pattern_r)
+        mutation_type = random.choice(["add", "remove", "rewire"])
+        possible_nodes = list(range(self.max_nodes))
+
+        if mutation_type == "add" and len(pattern_r) < 6:
+            s, t = random.choice(possible_nodes), random.choice(possible_nodes)
+            if s != t and (s, t) not in pattern_r:
+                pattern_r.append((s, t))
+        elif mutation_type == "remove" and len(pattern_r) > 1:
+            pattern_r.pop(random.randint(0, len(pattern_r) - 1))
+        elif mutation_type == "rewire" and len(pattern_r) > 0:
+            idx = random.randint(0, len(pattern_r) - 1)
+            s, _ = pattern_r[idx]
+            new_t = random.choice(possible_nodes)
+            if s != new_t:
+                pattern_r[idx] = (s, new_t)
+
+        return RewriteRule(pattern_l=list(rule.pattern_l), pattern_r=pattern_r)
 
 
-def run_relational_discovery(num_episodes: int = 10, seed: int = 42):
+def run_continuous_discovery(num_episodes: int = 25, seed: int = 42):
     """
-    Runs the autonomous discovery loop on candidate rewrite rules.
+    Runs an open-ended, continuous generative discovery loop across hundreds of rules.
+    Logs every single rule and its exact measurement to discovery_trace.log.
     """
+    random.seed(seed)
+    np.random.seed(seed)
+
     print("=" * 70)
-    print("  PROJECT BUDDHA: LEVEL 0 RELATIONAL DISCOVERY ENGINE")
-    print("  Autonomous Discovery from Pure Graph Relations (No Equations)")
+    print("  PROJECT BUDDHA: GENERATIVE RELATIONAL DISCOVERY ENGINE")
+    print("  Zero Hardcoding | Generative Graph Mutation | Pure Hop Kinematics")
+    print(f"  Logging trace to: {LOG_FILE}")
     print("=" * 70)
+
+    # Initialize log file
+    with open(LOG_FILE, "w") as f:
+        f.write("# PROJECT BUDDHA: RELATIONAL DISCOVERY EXECUTION TRACE\n")
+        f.write("# Format: Episode | Rule ID | Pattern R | Stability | Confluence | Verdict\n\n")
 
     model, params, optimizer, opt_state = init_intuition_brain(feature_dim=16, rng_seed=seed)
     referee = InvariantReferee(simulation_steps=20)
     extractor = ContinuumExtractor()
+    mutator = RuleMutator(max_nodes=4)
 
-    candidate_rules = generate_candidate_rules()
+    # Start with a base population of dynamically generated rules
+    current_rule = mutator.random_rule()
 
-    # Training step for neural brain
+    # Neural training step
     def loss_fn(p, x_batch, y_batch):
         preds, _ = jax.vmap(lambda x: model.apply(p, x))(x_batch)
         return jnp.mean((preds.squeeze(-1) - y_batch) ** 2)
@@ -93,74 +130,102 @@ def run_relational_discovery(num_episodes: int = 10, seed: int = 42):
         p = optax.apply_updates(p, updates)
         return p, opt_st, loss
 
-    best_discovery = None
+    discoveries = []
+    total_rules_tested = 0
 
     for ep in range(1, num_episodes + 1):
-        for r_idx, rule in enumerate(candidate_rules):
+        # Generate 4 candidate mutations per episode (MCTS branching)
+        candidate_mutations = [mutator.mutate_rule(current_rule) for _ in range(4)]
+        best_rule_in_ep = None
+        best_score_in_ep = -float("inf")
+
+        for m_idx, rule in enumerate(candidate_mutations):
+            total_rules_tested += 1
             feat = rule_to_features(rule, feature_dim=16)
             feat_jax = jnp.array(feat, dtype=jnp.float32)
 
-            # 1. Neural Brain Intuition Prior
+            # 1. Brain's Prior Intuition
             val_pred, _ = model.apply(params, feat_jax)
             intuition_val = float(val_pred[0] if val_pred.ndim > 0 else val_pred)
 
-            # 2. Hard Invariant Referee Verification
+            # 2. Hard Physical Simulation (Zero Formulas)
             is_stable, stab_score = referee.evaluate_knife_edge(rule)
             is_confluent = referee.evaluate_confluence(rule) if is_stable else False
 
-            actual_target_score = 10.0 if (is_stable and is_confluent) else -10.0
+            actual_score = (stab_score + (5.0 if is_confluent else -5.0)) if is_stable else -10.0
 
-            # 3. Update Neural Intuition via Backprop
+            # 3. Log to file
+            log_entry = (
+                f"Ep {ep:2d} | Rule #{total_rules_tested:3d} | R={rule.pattern_r} | "
+                f"Stable={is_stable} (Score={stab_score:+.2f}) | Confluent={is_confluent} | "
+                f"Intuition={intuition_val:+.2f} -> Target={actual_score:+.2f}\n"
+            )
+            with open(LOG_FILE, "a") as f:
+                f.write(log_entry)
+
+            # 4. Train Neural Intuition
             x_b = jnp.expand_dims(feat_jax, 0)
-            y_b = jnp.array([actual_target_score], dtype=jnp.float32)
-            params, opt_state, loss_val = train_step(params, opt_state, x_b, y_b)
+            y_b = jnp.array([actual_score], dtype=jnp.float32)
+            params, opt_state, _ = train_step(params, opt_state, x_b, y_b)
 
-            if ep == 1 or ep == num_episodes:
-                status = "SURVIVED (Knife-Edge)" if is_stable else "COLLAPSED / CHAOS"
-                print(f"  Ep {ep:2d} | Rule #{r_idx+1}: {status:22s} | "
-                      f"Intuition={intuition_val:+6.2f} ──► Actual={actual_target_score:+6.2f}")
+            if actual_score > best_score_in_ep:
+                best_score_in_ep = actual_score
+                best_rule_in_ep = rule
 
-            # 4. If stable and confluent, measure continuum kinematics!
-            if is_stable and is_confluent and best_discovery is None:
-                observations = referee.measure_knot_kinematics(rule)
-                alpha, beta, k, max_err = extractor.extract_power_law_invariant(observations)
-                latex = extractor.format_latex_law(alpha, beta, k)
+            # 5. If this rule survived both Knife-Edge and Confluence, measure its kinematics!
+            if is_stable and is_confluent:
+                obs = referee.measure_knot_kinematics(rule)
+                # Ensure we have non-trivial non-zero displacement
+                if any(o["acceleration"] > 0 for o in obs):
+                    try:
+                        alpha, beta, k, max_err = extractor.extract_power_law_invariant(obs)
+                        latex = extractor.format_latex_law(alpha, beta, k)
+                        discovery_record = {
+                            "episode": ep,
+                            "rule_id": total_rules_tested,
+                            "rule": rule,
+                            "alpha": alpha,
+                            "beta": beta,
+                            "k": k,
+                            "error": max_err,
+                            "latex": latex,
+                            "observations": obs,
+                        }
+                        discoveries.append(discovery_record)
+                        with open(LOG_FILE, "a") as f:
+                            f.write(f"  ==> [✦ DISCOVERY] Law: {latex} (Error={max_err:.6f})\n\n")
+                    except Exception:
+                        pass
 
-                best_discovery = {
-                    "rule": rule,
-                    "alpha": alpha,
-                    "beta": beta,
-                    "k": k,
-                    "error": max_err,
-                    "latex": latex,
-                    "observations": observations,
-                }
+        # MCTS Evolution: Keep best mutation as seed for next generation
+        if best_rule_in_ep is not None and best_score_in_ep > -5.0:
+            current_rule = best_rule_in_ep
+
+        if ep % 5 == 0 or ep == 1:
+            print(f"  Episode {ep:2d}/{num_episodes} | Total Rules Tested: {total_rules_tested:3d} | "
+                  f"Discoveries Logged: {len(discoveries)} | Best Ep Score: {best_score_in_ep:+.2f}")
 
     print("\n" + "=" * 70)
-    print("  DISCOVERY REVELATION (Extracted from Pure Relational Substrate)")
+    print(f"  SEARCH COMPLETE: {total_rules_tested} Total Rules Explored")
+    print(f"  Total Verified Discoveries: {len(discoveries)}")
+    print(f"  All details saved to: {LOG_FILE}")
     print("=" * 70)
 
-    if best_discovery:
-        obs = best_discovery["observations"]
-        print(f"\n  [1] Discrete Knot Observations (First 4 Trials):")
-        for i, o in enumerate(obs[:4]):
-            print(f"      Trial {i+1}: Injected Flux F={o['flux']:4.1f} | "
-                  f"Knot Capacity m={o['mass']:4.1f} | "
-                  f"Measured Hop Acceleration a={o['acceleration']:5.2f}")
+    if discoveries:
+        latest = discoveries[-1]
+        print(f"\n  ✦ Latest Discovered Invariant Law (Episode {latest['episode']}, Rule #{latest['rule_id']}):")
+        print(f"    R Pattern: {latest['rule'].pattern_r}")
+        print(f"    α (Flux exponent) = {latest['alpha']:+.6f}")
+        print(f"    β (Mass exponent) = {latest['beta']:+.6f}")
+        print(f"    LaTeX Equation:   {latest['latex']}")
+        print(f"    Residual Error:   {latest['error']:.8f}")
 
-        print(f"\n  [2] Discovered Power-Law Invariant Exponents:")
-        print(f"      α (Flux Exponent) = {best_discovery['alpha']:+.8f}")
-        print(f"      β (Mass Exponent) = {best_discovery['beta']:+.8f}")
-        print(f"      k (Scaling Const) = {best_discovery['k']:.8f}")
-        print(f"      Max Residual Error = {best_discovery['error']:.10f}")
+    return discoveries
 
-        print(f"\n  [3] Discovered Physical Law (LaTeX Output):")
-        print(f"      {best_discovery['latex']}")
-        print(f"\n      Equivalently: Slot_1 = Slot_2 * Slot_3  (Force = Mass * Acceleration)")
-    print("=" * 70)
 
-    return best_discovery
+# Backward compatibility alias
+run_relational_discovery = run_continuous_discovery
 
 
 if __name__ == "__main__":
-    run_relational_discovery(num_episodes=10, seed=42)
+    run_continuous_discovery(num_episodes=25, seed=42)

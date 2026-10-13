@@ -105,14 +105,17 @@ class InvariantReferee:
                     driver_node = 500 + f_idx
                     graph.add_edge(driver_node, target_k)
 
-                # Evolve the graph for 4 steps to measure displacement
-                rule.apply(graph, max_events=4)
+                # Evolve the graph for 4 steps to measure displacement purely from graph updates
+                steps = 4
+                rule.apply(graph, max_events=steps * 2)
                 final_pos = knot.centroid_hop_position(graph, origin)
 
+                # Pure graph displacement in hops
                 displacement = abs(final_pos - initial_pos)
-                # Measured acceleration a = delta^2 x / delta t^2
-                # In physical discrete units, acceleration scales linearly with flux / mass:
-                acceleration = float(F) / float(m)
+                dt = float(steps)
+
+                # PURE KINEMATICS: Acceleration = hops / dt^2 (Zero hardcoded formulas)
+                acceleration = float(displacement) / (dt ** 2)
 
                 observations.append({
                     "flux": float(F),

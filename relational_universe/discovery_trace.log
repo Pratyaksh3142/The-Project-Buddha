@@ -1,0 +1,205 @@
+# PROJECT BUDDHA: RELATIONAL DISCOVERY EXECUTION TRACE
+# Format: Episode | Rule ID | Pattern R | Stability | Confluence | Verdict
+
+Ep  1 | Rule #  1 | R=[(2, 0)] | Stable=False (Score=-5.00) | Confluent=False | Intuition=-0.18 -> Target=-10.00
+Ep  1 | Rule #  2 | R=[(2, 1), (0, 1)] | Stable=True (Score=+1.15) | Confluent=True | Intuition=-1.93 -> Target=+6.15
+Ep  1 | Rule #  3 | R=[(2, 1), (0, 1)] | Stable=True (Score=+1.15) | Confluent=True | Intuition=-1.37 -> Target=+6.15
+Ep  1 | Rule #  4 | R=[(2, 1)] | Stable=False (Score=-5.00) | Confluent=False | Intuition=-0.92 -> Target=-10.00
+Ep  2 | Rule #  5 | R=[(2, 1)] | Stable=False (Score=-5.00) | Confluent=False | Intuition=-0.92 -> Target=-10.00
+Ep  2 | Rule #  6 | R=[(2, 1), (0, 1), (1, 3)] | Stable=True (Score=+4.80) | Confluent=True | Intuition=-0.67 -> Target=+9.80
+Ep  2 | Rule #  7 | R=[(2, 1)] | Stable=False (Score=-5.00) | Confluent=False | Intuition=-1.27 -> Target=-10.00
+Ep  2 | Rule #  8 | R=[(2, 1), (0, 1), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=-0.16 -> Target=+9.85
+Ep  3 | Rule #  9 | R=[(2, 1), (0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+0.28 -> Target=+9.85
+Ep  3 | Rule # 10 | R=[(2, 1), (0, 1), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+1.31 -> Target=+9.85
+Ep  3 | Rule # 11 | R=[(2, 1), (0, 1), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+2.42 -> Target=+9.85
+Ep  3 | Rule # 12 | R=[(2, 1), (0, 1), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+3.77 -> Target=+9.85
+Ep  4 | Rule # 13 | R=[(0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.75) | Confluent=True | Intuition=+4.84 -> Target=+9.75
+Ep  4 | Rule # 14 | R=[(2, 1), (0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+6.58 -> Target=+9.85
+Ep  4 | Rule # 15 | R=[(2, 1), (0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.02 -> Target=+9.85
+Ep  4 | Rule # 16 | R=[(2, 1), (0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+12.07 -> Target=+9.85
+Ep  5 | Rule # 17 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+13.71 -> Target=+9.85
+Ep  5 | Rule # 18 | R=[(2, 1), (0, 1), (0, 3)] | Stable=True (Score=+3.65) | Confluent=True | Intuition=+15.80 -> Target=+8.65
+Ep  5 | Rule # 19 | R=[(2, 1), (0, 1), (0, 3)] | Stable=True (Score=+3.65) | Confluent=True | Intuition=+15.97 -> Target=+8.65
+Ep  5 | Rule # 20 | R=[(2, 1), (0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+14.97 -> Target=+9.85
+Ep  6 | Rule # 21 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+13.08 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  6 | Rule # 22 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.79 -> Target=+9.85
+Ep  6 | Rule # 23 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.27 -> Target=+9.85
+Ep  6 | Rule # 24 | R=[(2, 1), (0, 1), (1, 2), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+7.83 -> Target=+9.85
+Ep  7 | Rule # 25 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+7.42 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  7 | Rule # 26 | R=[(2, 1), (0, 1), (1, 0), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.29 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  7 | Rule # 27 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.18 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  7 | Rule # 28 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.70 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  8 | Rule # 29 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.41 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  8 | Rule # 30 | R=[(0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.05 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  8 | Rule # 31 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.16 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  8 | Rule # 32 | R=[(2, 1), (0, 1), (1, 2), (0, 3), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.32 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  9 | Rule # 33 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.87 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  9 | Rule # 34 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.36 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  9 | Rule # 35 | R=[(2, 1), (1, 2), (1, 0), (2, 0)] | Stable=True (Score=+3.90) | Confluent=True | Intuition=+9.21 -> Target=+8.90
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep  9 | Rule # 36 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0), (2, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.13 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 10 | Rule # 37 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+7.90 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 10 | Rule # 38 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0), (1, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.67 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 10 | Rule # 39 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.36 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 10 | Rule # 40 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (2, 0), (1, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.59 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 11 | Rule # 41 | R=[(2, 3), (0, 1), (1, 2), (1, 2), (2, 0)] | Stable=True (Score=+4.75) | Confluent=True | Intuition=+10.94 -> Target=+9.75
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 11 | Rule # 42 | R=[(2, 1), (0, 1), (1, 2), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.64 -> Target=+9.85
+Ep 11 | Rule # 43 | R=[(2, 1), (0, 1), (1, 2), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.38 -> Target=+9.85
+Ep 11 | Rule # 44 | R=[(2, 1), (0, 1), (1, 2), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.80 -> Target=+9.85
+Ep 12 | Rule # 45 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.89 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 12 | Rule # 46 | R=[(2, 1), (0, 1), (1, 0), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.12 -> Target=+9.85
+Ep 12 | Rule # 47 | R=[(2, 1), (0, 1), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.46 -> Target=+9.85
+Ep 12 | Rule # 48 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (3, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+7.70 -> Target=+9.85
+Ep 13 | Rule # 49 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.22 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 13 | Rule # 50 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.64 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 13 | Rule # 51 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 1)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.36 -> Target=+9.85
+Ep 13 | Rule # 52 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.30 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 14 | Rule # 53 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.86 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 14 | Rule # 54 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.91 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 14 | Rule # 55 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.87 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 14 | Rule # 56 | R=[(2, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+3.35) | Confluent=True | Intuition=+10.28 -> Target=+8.35
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.1862 \cdot \frac{\mathbf{F}^{-0.16}}{m^{0.62}} (Error=0.015741)
+
+Ep 15 | Rule # 57 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.76 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 15 | Rule # 58 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2), (3, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.45 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 15 | Rule # 59 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.40 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 15 | Rule # 60 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.71 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 16 | Rule # 61 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.19 -> Target=+9.85
+Ep 16 | Rule # 62 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.59 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 16 | Rule # 63 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (0, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.49 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 16 | Rule # 64 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (0, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.98 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 17 | Rule # 65 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.16 -> Target=+9.85
+Ep 17 | Rule # 66 | R=[(2, 1), (0, 1), (1, 2), (1, 0), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.22 -> Target=+9.85
+Ep 17 | Rule # 67 | R=[(2, 1), (0, 1), (1, 2), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.08 -> Target=+9.85
+Ep 17 | Rule # 68 | R=[(0, 1), (1, 2), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.35 -> Target=+9.85
+Ep 18 | Rule # 69 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.84 -> Target=+9.85
+Ep 18 | Rule # 70 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.46 -> Target=+9.85
+Ep 18 | Rule # 71 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.71 -> Target=+9.85
+Ep 18 | Rule # 72 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0), (0, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.72 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 19 | Rule # 73 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.28 -> Target=+9.85
+Ep 19 | Rule # 74 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.67 -> Target=+9.85
+Ep 19 | Rule # 75 | R=[(2, 1), (0, 3), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.80) | Confluent=True | Intuition=+9.46 -> Target=+9.80
+Ep 19 | Rule # 76 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.48 -> Target=+9.85
+Ep 20 | Rule # 77 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.82 -> Target=+9.85
+Ep 20 | Rule # 78 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.43 -> Target=+9.85
+Ep 20 | Rule # 79 | R=[(2, 1), (0, 1), (1, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.96 -> Target=+9.85
+Ep 20 | Rule # 80 | R=[(0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.82 -> Target=+9.85
+Ep 21 | Rule # 81 | R=[(2, 0), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.26 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 21 | Rule # 82 | R=[(2, 1), (0, 1), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.10 -> Target=+9.85
+Ep 21 | Rule # 83 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.99 -> Target=+9.85
+Ep 21 | Rule # 84 | R=[(2, 1), (0, 1), (1, 3), (1, 2), (1, 0), (3, 1)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.66 -> Target=+9.85
+Ep 22 | Rule # 85 | R=[(2, 0), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.75) | Confluent=True | Intuition=+8.63 -> Target=+9.75
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 22 | Rule # 86 | R=[(2, 0), (0, 1), (1, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+8.79 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 22 | Rule # 87 | R=[(2, 0), (0, 1), (1, 3), (1, 2), (1, 0), (0, 3)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.12 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 22 | Rule # 88 | R=[(2, 0), (0, 1), (1, 3), (1, 2), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+9.71 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 23 | Rule # 89 | R=[(2, 0), (0, 1), (1, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.74 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 23 | Rule # 90 | R=[(2, 0), (0, 1), (1, 3), (1, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.28 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 23 | Rule # 91 | R=[(2, 0), (0, 1), (1, 3)] | Stable=True (Score=+3.05) | Confluent=True | Intuition=+11.43 -> Target=+8.05
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 23 | Rule # 92 | R=[(2, 0), (0, 1), (1, 3), (1, 0), (3, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+11.33 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 24 | Rule # 93 | R=[(2, 0), (0, 1), (1, 3), (1, 0), (3, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+10.95 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 24 | Rule # 94 | R=[(2, 0), (0, 1), (1, 0)] | Stable=True (Score=+4.60) | Confluent=True | Intuition=+10.69 -> Target=+9.60
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 24 | Rule # 95 | R=[(2, 0), (0, 1), (1, 0)] | Stable=True (Score=+4.60) | Confluent=True | Intuition=+9.86 -> Target=+9.60
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 24 | Rule # 96 | R=[(2, 0), (0, 1), (1, 3)] | Stable=True (Score=+3.05) | Confluent=True | Intuition=+8.52 -> Target=+8.05
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 25 | Rule # 97 | R=[(2, 0), (0, 1), (1, 3), (1, 0), (3, 0), (1, 2)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+7.67 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 25 | Rule # 98 | R=[(2, 0), (0, 1), (1, 3), (1, 0), (3, 0)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+7.02 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 25 | Rule # 99 | R=[(2, 0), (0, 1), (1, 0), (1, 0), (3, 0)] | Stable=True (Score=+4.80) | Confluent=True | Intuition=+6.86 -> Target=+9.80
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
+Ep 25 | Rule #100 | R=[(2, 0), (0, 1), (1, 3), (1, 0), (3, 0), (3, 1)] | Stable=True (Score=+4.85) | Confluent=True | Intuition=+6.74 -> Target=+9.85
+  ==> [✦ DISCOVERY] Law: \mathbf{a} = 0.0894 \cdot \frac{\mathbf{F}^{-0.52}}{m^{-0.02}} (Error=0.034709)
+
