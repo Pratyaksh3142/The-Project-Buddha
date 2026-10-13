@@ -7,10 +7,12 @@ and outputs:
 2. Policy Head: Probability distribution over discrete mutation actions
 """
 
+import os
 from typing import Dict, Any, Tuple
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
+from flax import serialization
 import optax
 import numpy as np
 
@@ -124,3 +126,23 @@ class NeuralIntuitionEngine:
             "value_loss": float(val_loss),
             "policy_loss": float(pol_loss)
         }
+
+    def save_checkpoint(self, filepath: str):
+        """
+        Saves neural weights to disk.
+        """
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        bytes_data = serialization.to_bytes(self.params)
+        with open(filepath, "wb") as f:
+            f.write(bytes_data)
+
+    def load_checkpoint(self, filepath: str) -> bool:
+        """
+        Loads neural weights from disk if file exists.
+        """
+        if os.path.exists(filepath):
+            with open(filepath, "rb") as f:
+                bytes_data = f.read()
+            self.params = serialization.from_bytes(self.params, bytes_data)
+            return True
+        return False
