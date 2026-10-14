@@ -5,3 +5,5 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 target/
+training_output/
+*.bin

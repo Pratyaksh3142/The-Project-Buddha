@@ -1,11 +1,15 @@
 """
-Unified MCTS Engine for Multi-Physical & Mathematical Discovery.
+Unified MCTS Engine for Relational Discovery.
 
-Explores relational graph mutations and AlphaFold 3-style spatial relaxation
-guided by the Neural Pairformer Brain and Universal Action Referee.
+AlphaZero/MuZero-style Monte Carlo Tree Search with:
+  - Dynamic min-max Q-value normalization (MuZero)
+  - Dirichlet noise at root for exploration
+  - Neural value head as primary leaf evaluator
+  - Complete action space: off-diagonal couplings (i < j) AND on-site potentials (i == j)
+  - Top-K expansion and progressive widening for deep tree search
 """
 
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Tuple, Optional, Any
 import numpy as np
 import math
 from unified_universe.substrate import UniversalSubstrate
@@ -13,161 +17,215 @@ from unified_universe.action_referee import UniversalActionReferee
 from unified_universe.neural_pairformer import UnifiedIntuitionEngine
 
 
-class UnifiedMCTSNode:
-    def __init__(self, substrate: UniversalSubstrate, parent=None, action_taken: Optional[int] = None, prior: float = 0.0):
+class MCTSNode:
+    __slots__ = ['substrate', 'parent', 'action_taken', 'prior',
+                 'visit_count', 'value_sum', 'children', 'is_expanded']
+
+    def __init__(self, substrate: UniversalSubstrate, parent=None,
+                 action_taken: Optional[int] = None, prior: float = 0.0):
         self.substrate = substrate
         self.parent = parent
         self.action_taken = action_taken
         self.prior = prior
-
         self.visit_count = 0
         self.value_sum = 0.0
-        self.children: Dict[int, UnifiedMCTSNode] = {}
+        self.children: Dict[int, 'MCTSNode'] = {}
         self.is_expanded = False
-        self.eval_result: Optional[Dict] = None
 
     @property
     def q_value(self) -> float:
-        if self.visit_count == 0:
-            return 0.0
-        return self.value_sum / self.visit_count
+        return self.value_sum / self.visit_count if self.visit_count > 0 else 0.0
+
+
+def compute_num_pairs(N: int) -> int:
+    """Number of unique entity pairs including diagonals (i <= j): N*(N+1)/2."""
+    return N * (N + 1) // 2
+
+
+def compute_num_actions(N: int, K: int) -> int:
+    """Total discrete actions: pairs (i <= j) * K channels * 2 deltas."""
+    return compute_num_pairs(N) * K * 2
+
+
+def decode_action(action_idx: int, N: int, K: int) -> Tuple[int, int, int, float]:
+    """Decode flat action index -> (i, j, channel, delta) with i <= j."""
+    acts_per_pair = K * 2
+    pair_idx = action_idx // acts_per_pair
+    remainder = action_idx % acts_per_pair
+    ch = remainder // 2
+    delta = -1.0 if (remainder % 2 == 0) else 1.0
+
+    curr = 0
+    for i in range(N):
+        for j in range(i, N):
+            if curr == pair_idx:
+                return i, j, ch, delta
+            curr += 1
+    return 0, 0, 0, 1.0
+
+
+class MinMaxStats:
+    """Tracks running min/max Q-values for dynamic normalization (MuZero)."""
+    def __init__(self):
+        self.minimum = float('inf')
+        self.maximum = float('-inf')
+
+    def update(self, value: float):
+        self.minimum = min(self.minimum, value)
+        self.maximum = max(self.maximum, value)
+
+    def normalize(self, value: float) -> float:
+        span = self.maximum - self.minimum
+        if span > 1e-6:
+            return (value - self.minimum) / span
+        return value
 
 
 class UnifiedMCTSEngine:
-    """
-    Directs Monte Carlo Tree Search over the universal relational substrate.
-    """
+    """AlphaZero/MuZero-style MCTS over the universal relational substrate."""
 
     def __init__(
         self,
         referee: UniversalActionReferee,
         brain: UnifiedIntuitionEngine,
-        num_simulations: int = 32,
-        max_depth: int = 10,
-        c_puct: float = 1.4
+        num_simulations: int = 64,
+        max_depth: int = 8,
+        c_puct: float = 1.25,
+        c_puct_log_base: float = 19652.0,
+        dirichlet_alpha: float = 0.3,
+        dirichlet_frac: float = 0.25,
     ):
         self.referee = referee
         self.brain = brain
         self.num_simulations = num_simulations
         self.max_depth = max_depth
         self.c_puct = c_puct
-        self.discovered_phases: List[Dict[str, Any]] = []
+        self.c_puct_log_base = c_puct_log_base
+        self.dir_alpha = dirichlet_alpha
+        self.dir_frac = dirichlet_frac
 
-    def evaluate_node(self, node: UnifiedMCTSNode) -> Tuple[float, bool]:
-        """
-        Evaluates node using the Universal Action Referee.
-        """
-        if node.eval_result is None:
-            node.eval_result = self.referee.compute_universal_action(node.substrate)
+    def search(
+        self,
+        root_substrate: UniversalSubstrate,
+        temperature: float = 1.0
+    ) -> Tuple[int, np.ndarray, float]:
+        """Run MCTS. Returns (best_action, visit_probs, root_q)."""
+        num_actions = self.brain.num_actions
+        root = MCTSNode(substrate=root_substrate.clone())
+        min_max = MinMaxStats()
 
-        res = node.eval_result
-        tot_act = res["total_action"]
-
-        # Variational principle: reward is strictly the negative action functional
-        # Lower action S -> higher search reward
-        reward = -np.tanh(tot_act / 20.0)
-
-        # Invariant spectral analysis (passive diagnostics only)
-        qm = res["quantum"]
-        sp = res["spatial"]
-        alg = res["algebra"]
-        top = res.get("topology", {})
-
-        is_breakthrough = False
-        # Emergent ground state criteria: non-trivial couplings with vanishing Jacobi anomaly or stable spectral gap
-        has_couplings = np.sum(np.abs(node.substrate.Z)) > 0
-        if has_couplings and (alg["jacobi_violation"] < 1e-4 or qm["spectral_gap"] > 0.1):
-            is_breakthrough = True
-            self.discovered_phases.append({
-                "action": tot_act,
-                "quantum": qm,
-                "spatial": sp,
-                "algebra": alg,
-                "topology": top,
-                "substrate": node.substrate.clone()
-            })
-
-        return float(reward), is_breakthrough
-
-    def search(self, root_substrate: UniversalSubstrate, temperature: float = 0.5) -> Tuple[int, np.ndarray, float]:
-        root = UnifiedMCTSNode(substrate=root_substrate.clone())
+        # Expand root with Dirichlet exploration noise
+        self._expand_node(root, add_noise=True)
 
         for _ in range(self.num_simulations):
             node = root
             search_path = [node]
             depth = 0
 
-            # 1. SELECT
-            while node.is_expanded and depth < self.max_depth:
-                action, node = self._select_child(node)
+            # 1. SELECT (PUCT with dynamic min-max normalization)
+            while node.is_expanded and len(node.children) > 0 and depth < self.max_depth:
+                _, node = self._select_child(node, min_max)
                 search_path.append(node)
                 depth += 1
 
-            # 2. EVALUATE & EXPAND
-            leaf = search_path[-1]
-            reward, is_breakthrough = self.evaluate_node(leaf)
+            # 2. EVALUATE via neural value head
+            _, value, _ = self.brain.predict(node.substrate)
 
-            if depth < self.max_depth and not leaf.is_expanded:
-                self._expand_node(leaf)
+            # 3. EXPAND if not at leaf boundary
+            if depth < self.max_depth and not node.is_expanded:
+                self._expand_node(node, add_noise=False)
 
-            # 3. BACKPROPAGATE
+            # 4. BACKPROPAGATE
             for n in reversed(search_path):
                 n.visit_count += 1
-                n.value_sum += reward
+                n.value_sum += value
+                min_max.update(n.q_value)
 
-        # Visit distribution
-        visit_counts = np.zeros(self.brain.num_actions, dtype=np.float32)
+        # Extract visit distribution
+        visit_counts = np.zeros(num_actions, dtype=np.float32)
         for a, child in root.children.items():
-            visit_counts[a] = child.visit_count
+            if a < num_actions:
+                visit_counts[a] = child.visit_count
 
-        if np.sum(visit_counts) > 0:
-            if temperature < 1e-3:
-                best_action = int(np.argmax(visit_counts))
-                visit_probs = visit_counts / np.sum(visit_counts)
+        total = np.sum(visit_counts)
+        if total > 0:
+            if temperature < 0.01:
+                best = int(np.argmax(visit_counts))
+                probs = np.zeros_like(visit_counts)
+                probs[best] = 1.0
             else:
-                counts_temp = visit_counts ** (1.0 / temperature)
-                visit_probs = counts_temp / np.sum(counts_temp)
-                best_action = int(np.random.choice(len(visit_probs), p=visit_probs))
+                log_c = np.log(visit_counts + 1e-8) / max(temperature, 0.01)
+                log_c -= np.max(log_c)
+                probs = np.exp(log_c)
+                probs /= np.sum(probs)
+                best = int(np.random.choice(len(probs), p=probs))
         else:
-            best_action = 0
-            visit_probs = np.ones(self.brain.num_actions, dtype=np.float32) / self.brain.num_actions
+            best = int(np.random.randint(num_actions))
+            probs = np.ones(num_actions, dtype=np.float32) / num_actions
 
-        return best_action, visit_probs, root.q_value
+        return best, probs, root.q_value
 
-    def _select_child(self, node: UnifiedMCTSNode) -> Tuple[int, UnifiedMCTSNode]:
+    def _select_child(self, node: MCTSNode, min_max: MinMaxStats) -> Tuple[int, MCTSNode]:
+        """PUCT with dynamic min-max Q normalization (MuZero)."""
         best_score = -float('inf')
         best_action = 0
         best_child = None
-        sqrt_parent = math.sqrt(node.visit_count + 1)
+
+        total_visits = sum(c.visit_count for c in node.children.values())
+        sqrt_total = math.sqrt(total_visits + 1)
+
+        # Dynamic c_puct (MuZero scaling)
+        c = math.log((total_visits + self.c_puct_log_base + 1) / self.c_puct_log_base) + self.c_puct
 
         for a, child in node.children.items():
-            u = child.q_value + self.c_puct * child.prior * (sqrt_parent / (1 + child.visit_count))
-            if u > best_score:
-                best_score = u
+            q_norm = min_max.normalize(child.q_value) if child.visit_count > 0 else 0.0
+            exploration = c * child.prior * sqrt_total / (1 + child.visit_count)
+            score = q_norm + exploration
+
+            if score > best_score:
+                best_score = score
                 best_action = a
                 best_child = child
 
         return best_action, best_child
 
-    def _expand_node(self, node: UnifiedMCTSNode):
+    def _expand_node(self, node: MCTSNode, add_noise: bool = False):
+        """Expand node with neural prior + optional Dirichlet noise."""
         pol_probs, _, delta_x = self.brain.predict(node.substrate)
         node.is_expanded = True
+
         N = node.substrate.N
+        K = node.substrate.K
+        num_actions = self.brain.num_actions
 
-        # Decode actions: mutating pair (i, j, channel)
-        action_idx = 0
-        for i in range(N):
-            for j in range(i + 1, N):
-                for ch in range(min(node.substrate.d, 2)):
-                    for delta in [-1.0, 1.0]:
-                        if action_idx < self.brain.num_actions:
-                            next_sub = node.substrate.clone()
-                            next_sub.mutate_pair_tensor(i, j, ch, delta)
-                            # AlphaFold 3-style coordinate flow
-                            if next_sub.is_spatial:
-                                next_sub.X += delta_x * 0.05
+        if add_noise:
+            noise = np.random.dirichlet([self.dir_alpha] * num_actions)
+            pol_probs = (1 - self.dir_frac) * pol_probs + self.dir_frac * noise
 
-                            prior = float(pol_probs[action_idx])
-                            child = UnifiedMCTSNode(substrate=next_sub, parent=node, action_taken=action_idx, prior=prior)
-                            node.children[action_idx] = child
-                            action_idx += 1
+        # Progressive widening / top-K expansion to ensure deep tree search
+        if num_actions <= 64:
+            actions_to_expand = range(num_actions)
+        else:
+            # Expand top 40% of actions or minimum 32 actions
+            top_k = max(int(num_actions * 0.4), 32)
+            actions_to_expand = np.argsort(pol_probs)[-top_k:]
+
+        for idx in actions_to_expand:
+            if idx >= num_actions:
+                continue
+            i, j, ch, delta = decode_action(idx, N, K)
+            if ch >= K:
+                continue
+
+            child_sub = node.substrate.clone()
+            child_sub.mutate_pair_tensor(i, j, ch, delta)
+            if child_sub.is_spatial:
+                child_sub.X += delta_x * 0.05
+
+            child = MCTSNode(
+                substrate=child_sub,
+                parent=node,
+                action_taken=idx,
+                prior=float(pol_probs[idx])
+            )
+            node.children[idx] = child
