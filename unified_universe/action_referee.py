@@ -45,7 +45,9 @@ class UniversalActionReferee:
           2. Jacobi identity: C^m_{ij}C^l_{mk} + C^m_{jk}C^l_{mi} + C^m_{ki}C^l_{mj} = 0
           3. Non-triviality: At least one non-zero bracket [e_i, e_j] != 0
         """
-        M = min(self.N, self.K)
+        # Gauge channels are decoupled from matter channels (0: kinetic, 1: pairing)
+        gauge_offset = 2 if self.K >= 4 else 0
+        M = min(self.N, self.K - gauge_offset)
         if M < 2:
             return {
                 "jacobi_violation": 0.0,
@@ -56,8 +58,8 @@ class UniversalActionReferee:
                 "is_genuine_lie": False
             }
 
-        # Subspace tensor C: shape (M, M, M)
-        C = substrate.Z[:M, :M, :M]
+        # Subspace tensor C: shape (M, M, M) in gauge channels
+        C = substrate.Z[:M, :M, gauge_offset:gauge_offset + M]
 
         # 1. Antisymmetry violation: S_{ij}^k = C_{ij}^k + C_{ji}^k
         S_anti = C + np.swapaxes(C, 0, 1)

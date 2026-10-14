@@ -77,8 +77,8 @@ class MinMaxStats:
     def normalize(self, value: float) -> float:
         span = self.maximum - self.minimum
         if span > 1e-6:
-            return (value - self.minimum) / span
-        return value
+            return float(np.clip((value - self.minimum) / span, 0.0, 1.0))
+        return 0.5
 
 
 class UnifiedMCTSEngine:
@@ -128,8 +128,11 @@ class UnifiedMCTSEngine:
                 search_path.append(node)
                 depth += 1
 
-            # 2. EVALUATE via neural value head
-            _, value, _ = self.brain.predict(node.substrate)
+            # 2. EVALUATE: Ground in exact variational physics + neural intuition
+            _, net_val, _ = self.brain.predict(node.substrate)
+            act_dict = self.referee.compute_action(node.substrate)
+            phys_val = -np.tanh(act_dict["total_action"] / 10.0)
+            value = 0.5 * float(net_val) + 0.5 * float(phys_val)
 
             # 3. EXPAND if not at leaf boundary
             if depth < self.max_depth and not node.is_expanded:
@@ -149,21 +152,23 @@ class UnifiedMCTSEngine:
 
         total = np.sum(visit_counts)
         if total > 0:
+            # Raw visit probabilities are the true AlphaZero training target
+            raw_probs = visit_counts / total
+
             if temperature < 0.01:
                 best = int(np.argmax(visit_counts))
-                probs = np.zeros_like(visit_counts)
-                probs[best] = 1.0
             else:
+                # Temperature is used ONLY to sample the move during play
                 log_c = np.log(visit_counts + 1e-8) / max(temperature, 0.01)
                 log_c -= np.max(log_c)
-                probs = np.exp(log_c)
-                probs /= np.sum(probs)
-                best = int(np.random.choice(len(probs), p=probs))
+                sample_probs = np.exp(log_c)
+                sample_probs /= np.sum(sample_probs)
+                best = int(np.random.choice(len(sample_probs), p=sample_probs))
         else:
             best = int(np.random.randint(num_actions))
-            probs = np.ones(num_actions, dtype=np.float32) / num_actions
+            raw_probs = np.ones(num_actions, dtype=np.float32) / num_actions
 
-        return best, probs, root.q_value
+        return best, raw_probs, root.q_value
 
     def _select_child(self, node: MCTSNode, min_max: MinMaxStats) -> Tuple[int, MCTSNode]:
         """PUCT with dynamic min-max Q normalization (MuZero)."""
@@ -178,7 +183,9 @@ class UnifiedMCTSEngine:
         c = math.log((total_visits + self.c_puct_log_base + 1) / self.c_puct_log_base) + self.c_puct
 
         for a, child in node.children.items():
-            q_norm = min_max.normalize(child.q_value) if child.visit_count > 0 else 0.0
+            # First-Play Urgency (FPU): unvisited nodes inherit parent Q value
+            q_val = child.q_value if child.visit_count > 0 else node.q_value
+            q_norm = min_max.normalize(q_val)
             exploration = c * child.prior * sqrt_total / (1 + child.visit_count)
             score = q_norm + exploration
 
