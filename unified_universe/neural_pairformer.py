@@ -233,6 +233,12 @@ class UnifiedIntuitionEngine:
     def save_checkpoint(self, filepath: str):
         os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
         checkpoint_data = {
+            "metadata": {
+                "N": self.N,
+                "node_dim": self.node_dim,
+                "pair_dim": self.pair_dim,
+                "num_actions": self.num_actions,
+            },
             "params": serialization.to_state_dict(self.params),
             "opt_state": serialization.to_state_dict(self.opt_state),
             "train_steps": self.train_steps
@@ -241,22 +247,36 @@ class UnifiedIntuitionEngine:
             f.write(serialization.to_bytes(checkpoint_data))
 
     def load_checkpoint(self, filepath: str) -> bool:
-        if os.path.exists(filepath):
-            try:
-                with open(filepath, "rb") as f:
-                    raw_bytes = f.read()
-                data = serialization.from_bytes(dict, raw_bytes)
-                if "params" in data:
-                    self.params = serialization.from_state_dict(self.params, data["params"])
-                    if "opt_state" in data:
-                        self.opt_state = serialization.from_state_dict(self.opt_state, data["opt_state"])
-                    if "train_steps" in data:
-                        self.train_steps = int(data["train_steps"])
-                else:
-                    # Legacy checkpoint
-                    self.params = serialization.from_bytes(self.params, raw_bytes)
+        if not os.path.exists(filepath):
+            return False
+        try:
+            with open(filepath, "rb") as f:
+                raw_bytes = f.read()
+            data = serialization.from_bytes(dict, raw_bytes)
+            if "metadata" in data:
+                meta = data["metadata"]
+                if (meta.get("node_dim") != self.node_dim or
+                    meta.get("pair_dim") != self.pair_dim or
+                    meta.get("num_actions") != self.num_actions):
+                    print(f"  [Checkpoint Skip] Dimensions in {filepath} (node_dim={meta.get('node_dim')}) do not match current config (node_dim={self.node_dim}). Initializing fresh.")
+                    return False
+
+            if "params" in data:
+                loaded_params = serialization.from_state_dict(self.params, data["params"])
+                # Validate array shapes match current model
+                flat_current, _ = jax.tree_util.tree_flatten(self.params)
+                flat_loaded, _ = jax.tree_util.tree_flatten(loaded_params)
+                if any(c.shape != l.shape for c, l in zip(flat_current, flat_loaded)):
+                    print(f"  [Checkpoint Skip] Parameter tensor shapes in {filepath} do not match model. Initializing fresh.")
+                    return False
+
+                self.params = loaded_params
+                if "opt_state" in data:
+                    self.opt_state = serialization.from_state_dict(self.opt_state, data["opt_state"])
+                if "train_steps" in data:
+                    self.train_steps = int(data["train_steps"])
                 return True
-            except Exception as e:
-                print(f"Warning: Failed to load checkpoint {filepath}: {e}")
-                return False
+        except Exception as e:
+            print(f"  [Checkpoint Warning] Failed to restore {filepath}: {e}. Initializing fresh.")
+            return False
         return False
