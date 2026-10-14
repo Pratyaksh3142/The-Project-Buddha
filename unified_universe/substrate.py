@@ -56,17 +56,12 @@ class UniversalSubstrate:
     def mutate_pair_tensor(self, i: int, j: int, channel: int, delta: float, alphabet_bounds: Tuple[float, float] = (-2.0, 2.0)):
         """
         Discrete mutation of coupling/relational tensor Z[i, j, channel].
-        Channels 0 and 1 (hopping and interaction) are symmetric: Z_ij = Z_ji.
-        Channels >= 2 (Lie brackets) are skew-symmetric: Z_ij = -Z_ji.
+        Operates without domain channel hardcoding. Any matrix Z naturally decomposes
+        into symmetric (kinetic/bonding) and antisymmetric (pairing/gauge) components.
         """
         val = self.Z[i, j, channel] + delta
         val = max(alphabet_bounds[0], min(alphabet_bounds[1], val))
         self.Z[i, j, channel] = val
-
-        if channel < 2:
-            self.Z[j, i, channel] = val
-        else:
-            self.Z[j, i, channel] = -val
 
     def mutate_spatial_coordinate(self, i: int, delta_vec: np.ndarray, step_scale: float = 0.1):
         """

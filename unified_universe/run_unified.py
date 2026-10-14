@@ -1,9 +1,14 @@
 """
 Master Runner for Unified Relational Universe Engine.
 
-Demonstrates simultaneous discovery of Superconducting Quantum Matter,
-3D Molecular/Polymer Conformation, and Algebraic Symmetries within ONE single engine.
-Zero hardcoded domain rules. Pure stationary action principle.
+Demonstrates simultaneous discovery of Quantum Matter Ground States,
+Geometric Harmonic Embeddings, and Algebraic Symmetries within ONE single engine.
+
+CRITICAL MANDATE:
+- Pure Variational Principle: Stationary Action delta S = 0.
+- Zero Hardcoded empirical targets, zero BCS approximations, zero cheat reward bonuses.
+- Physical phases (gapped pairing, harmonic geometry, Lie symmetry) are classified purely
+  post-hoc via invariant spectral analysis.
 """
 
 import os
@@ -29,14 +34,14 @@ def run_unified_discovery(
 ):
     print("=" * 80)
     print("      PROJECT BUDDHA: UNIFIED RELATIONAL ACTION ENGINE")
-    print("   All-in-One: Quantum Matter, Biology, Chemistry & Mathematics")
+    print("   Pure Variational Discovery: Quantum Ground States, Geometry & Algebra")
     print("=" * 80)
     print(f"  Configuration:")
     print(f"    Entities (Nodes):      N = {num_entities}")
     print(f"    Spatial Embedding:     {is_spatial} (3D Cartesian coordinates)")
     print(f"    Architecture:          Pairformer (AlphaFold 3 / GNoME) + MCTS")
     print(f"    Universal Principle:   Stationary Action delta S = 0")
-    print(f"    Hardcoded Targets:     ZERO")
+    print(f"    Hardcoded Targets:     ABSOLUTE ZERO")
     print("=" * 80)
 
     # Compute number of discrete actions: pairs (i < j) * 2 channels * 2 deltas
@@ -88,10 +93,6 @@ def run_unified_discovery(
 
         for step in range(1, max_steps + 1):
             act_res = referee.compute_universal_action(substrate)
-            qm = act_res["quantum"]
-            sp = act_res["spatial"]
-            bio = act_res["biology"]
-
             best_action, visit_probs, q_val = mcts.search(substrate)
 
             ep_s.append(np.copy(substrate.S))
@@ -100,14 +101,12 @@ def run_unified_discovery(
             ep_policies.append(visit_probs)
 
             # Apply mutation
-            # decode action
             num_actions_per_pair = 4
             pair_idx = best_action // num_actions_per_pair
             sub_act = best_action % num_actions_per_pair
             ch = sub_act // 2
             delta = -1.0 if (sub_act % 2 == 0) else 1.0
 
-            # find pair (i, j)
             curr = 0
             mut_i, mut_j = 0, 1
             found = False
@@ -129,18 +128,35 @@ def run_unified_discovery(
             next_act = referee.compute_universal_action(substrate)
             next_qm = next_act["quantum"]
             next_sp = next_act["spatial"]
+            next_alg = next_act["algebra"]
 
-            print(f"  Step {step:02d} | Mutated Edge ({mut_i},{mut_j}) ch={ch} d={delta:+0.0f} | Action S: {next_act['total_action']:6.2f} | SC Delta: {next_qm['superconducting_delta']:.3f} | Rg: {next_sp.get('radius_of_gyration', 0.0):.2f}")
+            print(
+                f"  Step {step:02d} | Edge ({mut_i},{mut_j}) ch={ch} d={delta:+0.0f} | "
+                f"Action S: {next_act['total_action']:6.2f} | "
+                f"E_0: {next_qm['ground_energy']:6.2f} | "
+                f"Gap: {next_qm['spectral_gap']:.3f} | "
+                f"Pairing: {next_qm['pairing_norm']:.3f} | "
+                f"Rg: {next_sp.get('radius_of_gyration', 0.0):.2f}"
+            )
 
-            # Check for emergent breakthroughs
-            if next_qm["is_superconducting"] or (next_sp.get("is_compact_fold", False) and next_act['biology']['loop_density'] > 0):
-                print("  " + "*" * 65)
-                print(f"  [DISCOVERY] Emergent Phase Emerged at Step {step}!")
-                print(f"    Superconducting Order (ODLRO Delta): {next_qm['superconducting_delta']:.4f} (Active={next_qm['is_superconducting']})")
-                print(f"    Spatial Conformation (Compact Fold):  Rg={next_sp.get('radius_of_gyration', 0.0):.2f} (Compact={next_sp.get('is_compact_fold', False)})")
-                print(f"    Ground State Energy:                 {next_qm['ground_energy']:.4f}")
-                print(f"    Autocatalytic Feedback Loops:        {next_act['biology']['loop_density']:.1f}")
-                print("  " + "*" * 65)
+            # Passive post-hoc breakthrough detection (Zero impact on reward)
+            has_couplings = np.sum(np.abs(substrate.Z)) > 0
+            is_breakthrough = (
+                has_couplings and (
+                    next_qm["spectral_gap"] > 0.05 or
+                    next_alg["jacobi_violation"] < 1e-4
+                )
+            )
+
+            if is_breakthrough:
+                print("  " + "*" * 68)
+                print(f"  [DISCOVERY] Emergent Stationary State at Step {step}!")
+                print(f"    Variational Ground Energy:  E_0 = {next_qm['ground_energy']:.4f}")
+                print(f"    Quasiparticle Spectral Gap: Delta E = {next_qm['spectral_gap']:.4f}")
+                print(f"    Pairing Invariant Norm:     ||Delta||_F = {next_qm['pairing_norm']:.4f}")
+                print(f"    Dirichlet Geometric Energy: E_dir = {next_sp.get('dirichlet_energy', 0.0):.4f} (Rg = {next_sp.get('radius_of_gyration', 0.0):.2f})")
+                print(f"    Algebraic Jacobi Anomaly:   ||J|| = {next_alg['jacobi_violation']:.4f}")
+                print("  " + "*" * 68)
 
                 discoveries.append({
                     "episode": ep,
@@ -148,10 +164,11 @@ def run_unified_discovery(
                     "action": next_act["total_action"],
                     "quantum": next_qm,
                     "spatial": next_sp,
-                    "biology": next_act["biology"]
+                    "algebra": next_alg,
+                    "topology": next_act.get("topology", {})
                 })
 
-        # Buffer replay experience
+        # Buffer replay experience: target is negative action
         target_v = -next_act["total_action"] / 20.0
         for s, z, x, p in zip(ep_s, ep_z, ep_x, ep_policies):
             replay_s.append(s)
@@ -177,26 +194,31 @@ def run_unified_discovery(
     print("\n" + "=" * 80)
     print("                     UNIFIED DISCOVERY SUMMARY")
     print("=" * 80)
-    print(f"  Wall Time:               {elapsed:.2f} seconds")
-    print(f"  Total Breakthroughs:     {len(discoveries)}")
-    print(f"  Superconducting Phases:  {sum(1 for d in discoveries if d['quantum']['is_superconducting'])}")
-    print(f"  Compact Folded States:   {sum(1 for d in discoveries if d['spatial'].get('is_compact_fold', False))}")
+    print(f"  Wall Time:                   {elapsed:.2f} seconds")
+    print(f"  Total Stationary States:     {len(discoveries)}")
+    print(f"  Gapped Paired Phases:        {sum(1 for d in discoveries if d['quantum']['spectral_gap'] > 0.05 and d['quantum']['pairing_norm'] > 0.01)}")
+    print(f"  Geometric Relaxed States:    {sum(1 for d in discoveries if d['spatial'].get('dirichlet_energy', 0.0) > 0)}")
+    print(f"  Closed Lie Symmetries:       {sum(1 for d in discoveries if d['algebra']['jacobi_violation'] < 1e-4)}")
     print("=" * 80)
 
     # Save summary artifact
     report_file = os.path.join(output_dir, "unified_engine_verification.md")
     with open(report_file, "w") as f:
         f.write("# Project Buddha: Unified Relational Universe Verification\n\n")
-        f.write(f"- **Total Breakthroughs Discovered:** `{len(discoveries)}`\n")
-        f.write(f"- **Superconducting Quantum Phases:** `{sum(1 for d in discoveries if d['quantum']['is_superconducting'])}`\n")
-        f.write(f"- **Compact Molecular/Protein Folds:** `{sum(1 for d in discoveries if d['spatial'].get('is_compact_fold', False))}`\n")
-        f.write(f"- **Autocatalytic Closed Cycles:** `{sum(1 for d in discoveries if d['biology']['has_autocatalysis'])}`\n\n")
-        f.write("### Verified Emergent Phases\n")
+        f.write("### Pure Variational Formulation (Zero Hardcoding)\n\n")
+        f.write(f"- **Total Stationary States Discovered:** `{len(discoveries)}`\n")
+        f.write(f"- **Gapped Quantum Phases (Superconducting symmetry):** `{sum(1 for d in discoveries if d['quantum']['spectral_gap'] > 0.05 and d['quantum']['pairing_norm'] > 0.01)}`\n")
+        f.write(f"- **Geometric Harmonic Embeddings:** `{sum(1 for d in discoveries if d['spatial'].get('dirichlet_energy', 0.0) > 0)}`\n")
+        f.write(f"- **Exact Lie Symmetries:** `{sum(1 for d in discoveries if d['algebra']['jacobi_violation'] < 1e-4)}`\n\n")
+        f.write("### Verified Emergent Ground States\n")
         for i, d in enumerate(discoveries[:5], 1):
-            f.write(f"#### Discovery #{i} (Episode {d['episode']}, Step {d['step']})\n")
-            f.write(f"- **Ground State Energy:** `{d['quantum']['ground_energy']:.4f}`\n")
-            f.write(f"- **Superconducting ODLRO Delta:** `{d['quantum']['superconducting_delta']:.4f}`\n")
-            f.write(f"- **Radius of Gyration (Fold Compactness):** `{d['spatial'].get('radius_of_gyration', 0.0):.2f}`\n")
+            f.write(f"#### State #{i} (Episode {d['episode']}, Step {d['step']})\n")
+            f.write(f"- **Variational Ground Energy:** `{d['quantum']['ground_energy']:.4f}`\n")
+            f.write(f"- **Quasiparticle Spectral Gap:** `{d['quantum']['spectral_gap']:.4f}`\n")
+            f.write(f"- **Pairing Invariant Norm:** `{d['quantum']['pairing_norm']:.4f}`\n")
+            f.write(f"- **Graph Dirichlet Energy:** `{d['spatial'].get('dirichlet_energy', 0.0):.4f}`\n")
+            f.write(f"- **Radius of Gyration:** `{d['spatial'].get('radius_of_gyration', 0.0):.2f}`\n")
+            f.write(f"- **Jacobi Anomaly Violation:** `{d['algebra']['jacobi_violation']:.6f}`\n")
             f.write(f"- **Total Action S:** `{d['action']:.2f}`\n\n")
 
     print(f"  Saved verification report to: {report_file}")

@@ -63,26 +63,27 @@ class UnifiedMCTSEngine:
         res = node.eval_result
         tot_act = res["total_action"]
 
-        # Reward minimization of action / free energy
-        # Action lower -> reward higher
+        # Variational principle: reward is strictly the negative action functional
+        # Lower action S -> higher search reward
         reward = -np.tanh(tot_act / 20.0)
 
-        # Bonus for non-trivial emergent physical phases
+        # Invariant spectral analysis (passive diagnostics only)
         qm = res["quantum"]
         sp = res["spatial"]
         alg = res["algebra"]
-        bio = res["biology"]
+        top = res.get("topology", {})
 
         is_breakthrough = False
-        if qm["is_superconducting"] or sp.get("is_compact_fold", False) or (alg["jacobi_violation"] == 0 and np.sum(np.abs(node.substrate.Z)) > 0) or bio["has_autocatalysis"]:
+        # Emergent ground state criteria: non-trivial couplings with vanishing Jacobi anomaly or stable spectral gap
+        has_couplings = np.sum(np.abs(node.substrate.Z)) > 0
+        if has_couplings and (alg["jacobi_violation"] < 1e-4 or qm["spectral_gap"] > 0.1):
             is_breakthrough = True
-            reward += 5.0
             self.discovered_phases.append({
                 "action": tot_act,
                 "quantum": qm,
                 "spatial": sp,
                 "algebra": alg,
-                "biology": bio,
+                "topology": top,
                 "substrate": node.substrate.clone()
             })
 
