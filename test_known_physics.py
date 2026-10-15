@@ -239,16 +239,122 @@ def test_4_bilevel_differentiable_stationarity():
     return passed
 
 
+def test_5_composable_action_meta_referee():
+    """
+    TEST 5: Composable Tensor-Contraction Action & Meta-Referee (Buddha v2.0 Sprint 2).
+    Eliminates the 'Referee Paradox':
+      1. Evaluates candidate Action composed from primitive tensor contractions.
+      2. Meta-Referee verifies Meta-Axioms: Vacuum Stability, Anomaly Freedom, Non-Triviality.
+      3. Verifies automatic rejection of unphysical runaway theories.
+    """
+    print("\n" + "=" * 80)
+    print("  TEST 5: COMPOSABLE TENSOR CONTRACTION & META-REFEREE (Buddha v2.0 Sprint 2)")
+    print("=" * 80)
+    print("  Composing candidate Action Functional from gauge-covariant building blocks...")
+
+    from unified_universe.composable_action import ComposableAction, CompactnessWellTerm
+    from unified_universe.meta_referee import MetaReferee
+
+    N = 4
+    K = 6
+    meta_ref = MetaReferee(N=N, K=K)
+
+    # 1. Evaluate Valid Physical Universe
+    valid_action = ComposableAction.standard_universe(alpha_spatial=0.1, beta_jacobi=2.0)
+    print(f"  Candidate Action Functional: {valid_action.to_latex()}")
+
+    sub_valid = UniversalSubstrate(num_entities=N, num_channels=K, is_spatial=True)
+    sub_valid.Z[0, 1, 1] = 0.5
+    sub_valid.Z[1, 0, 1] = -0.5
+    sub_valid.mutate_structural_topology(0, 1, 1, mode=1)
+    sub_valid.mutate_structural_topology(1, 0, 1, mode=-1)
+
+    eval_valid = meta_ref.relax_and_evaluate(valid_action, sub_valid, steps=35)
+    print(f"  Valid Universe Assessment: Valid = {eval_valid['is_valid_universe']} | Meta-Score = {eval_valid['meta_score']:.2f}")
+    print(f"    - Vacuum Stability:      {eval_valid['passed_axioms']['vacuum_stability']}")
+    print(f"    - Anomaly Freedom:       {eval_valid['passed_axioms']['anomaly_freedom']}")
+    print(f"    - Non-Triviality:        {eval_valid['passed_axioms']['non_triviality']}")
+    print(f"    - Spatial Realizability: {eval_valid['passed_axioms']['spatial_realizability']}")
+
+    # 2. Evaluate Unphysical Runaway Action (Unbounded Potential)
+    unstable_action = ComposableAction([CompactnessWellTerm(weight=-10000.0)])
+    sub_unstable = UniversalSubstrate(num_entities=N, num_channels=K, is_spatial=True)
+    sub_unstable.Z += 1.0
+    eval_unstable = meta_ref.relax_and_evaluate(unstable_action, sub_unstable, steps=25, lr=1.0)
+    print(f"  Unstable Action Assessment: Valid = {eval_unstable['is_valid_universe']} | Meta-Score = {eval_unstable['meta_score']:.2f}")
+
+    passed = eval_valid['is_valid_universe'] and not eval_unstable['is_valid_universe'] and (eval_unstable['meta_score'] < 0)
+    print("-" * 80)
+    print(f"  VERDICT: {'[PASS] Composable Action & Meta-Referee Axioms Verified!' if passed else '[FAIL] Meta-Referee verification failed'}")
+    return passed
+
+
+def test_6_cross_n_symbolic_distillation():
+    """
+    TEST 6: Cross-N Scaling & Symbolic Law Distillation (Buddha v2.0 Sprint 3).
+    Solves 'Floating-Point Tensors Are Not Mathematical Laws':
+      1. Evaluates observable sequences across N in {4, 5, 6, 8}.
+      2. Distills exact scale-invariant SymPy formulas (e.g. N(N-1)/2, N^2 - 1).
+      3. Verifies zero-shot generalization at unseen N = 10 and N = 12.
+    """
+    print("\n" + "=" * 80)
+    print("  TEST 6: CROSS-N SCALING & SYMBOLIC LAW DISTILLATION (Buddha v2.0 Sprint 3)")
+    print("=" * 80)
+    print("  Distilling scale-invariant analytical laws from numerical sequences across N...")
+
+    from unified_universe.symbolic_distiller import SymbolicDistiller
+
+    distiller = SymbolicDistiller()
+    n_train = [4, 5, 6, 8]
+
+    # Benchmark A: Orthogonal Lie Gauge Dimension dim(so(N)) = N(N-1)/2
+    y_so = [n * (n - 1) / 2 for n in n_train]
+    law_so = distiller.distill_observable("dim_so_N", n_train, y_so, test_n=10, test_y=45.0)
+    print(f"  Discovered Gauge Law 1: {law_so}")
+    print(f"    LaTeX Formula:        {law_so.latex_str}")
+    print(f"    Zero-Shot at N=10:    Predicted = {law_so.predict(10)} | Expected = 45.0 | Verified = {law_so.verified_at_unseen}")
+
+    # Benchmark B: Unitary Lie Gauge Dimension dim(su(N)) = N^2 - 1
+    y_su = [n**2 - 1 for n in n_train]
+    law_su = distiller.distill_observable("dim_su_N", n_train, y_su, test_n=10, test_y=99.0)
+    print(f"  Discovered Gauge Law 2: {law_su}")
+    print(f"    LaTeX Formula:        {law_su.latex_str}")
+    print(f"    Zero-Shot at N=10:    Predicted = {law_su.predict(10)} | Expected = 99.0 | Verified = {law_su.verified_at_unseen}")
+
+    # Benchmark C: Topological Chern Integer Quantization C = 1 in Z
+    y_chern = [1.0, 1.0, 1.0, 1.0]
+    law_c = distiller.distill_observable("topological_chern_number", n_train, y_chern, test_n=12, test_y=1.0)
+    print(f"  Discovered Invariant 3: {law_c}")
+    print(f"    LaTeX Formula:        {law_c.latex_str}")
+    print(f"    Zero-Shot at N=12:    Verified = {law_c.verified_at_unseen}")
+
+    passed = (
+        law_so is not None and law_so.is_exact and law_so.verified_at_unseen and
+        law_su is not None and law_su.is_exact and law_su.verified_at_unseen and
+        law_c is not None and law_c.is_exact and law_c.verified_at_unseen
+    )
+    print("-" * 80)
+    print(f"  VERDICT: {'[PASS] Exact Cross-N Symbolic Scaling & Integer Invariants Verified!' if passed else '[FAIL] Symbolic distillation failed'}")
+    return passed
+
+
 if __name__ == "__main__":
     t1_pass = test_1_geometric_relaxation()
     t2_pass = test_2_quantum_cooper_pairing()
     t3_pass = test_3_algebraic_gauge_symmetry()
     t4_pass = test_4_bilevel_differentiable_stationarity()
+    t5_pass = test_5_composable_action_meta_referee()
+    t6_pass = test_6_cross_n_symbolic_distillation()
+
+    all_passed = t1_pass and t2_pass and t3_pass and t4_pass and t5_pass and t6_pass
 
     print("\n" + "=" * 80)
     print(f"  ALL BENCHMARKS COMPLETE: "
           f"Test 1 (Geometry): {'PASS' if t1_pass else 'FAIL'} | "
           f"Test 2 (Quantum): {'PASS' if t2_pass else 'FAIL'} | "
           f"Test 3 (Gauge): {'PASS' if t3_pass else 'FAIL'} | "
-          f"Test 4 (Bilevel δS=0): {'PASS' if t4_pass else 'FAIL'}")
+          f"Test 4 (Bilevel δS=0): {'PASS' if t4_pass else 'FAIL'} | "
+          f"Test 5 (Meta-Referee): {'PASS' if t5_pass else 'FAIL'} | "
+          f"Test 6 (Symbolic Laws): {'PASS' if t6_pass else 'FAIL'}")
+    print(f"  OVERALL STATUS: {'ALL 6 BENCHMARKS PASSED (Buddha v2.0 Complete)' if all_passed else 'SOME BENCHMARKS FAILED'}")
     print("=" * 80)
