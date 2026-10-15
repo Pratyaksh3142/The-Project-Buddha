@@ -38,6 +38,10 @@ class UniversalSubstrate:
         # Pair relational tensor Z: shape (N, N, K)
         self.Z = np.zeros((self.N, self.N, self.K), dtype=np.float32)
 
+        # Discrete structural mask M: shape (N, N, K)
+        # Governs discrete coupling topology and chirality
+        self.mask = np.ones((self.N, self.N, self.K), dtype=np.float32)
+
         # 3D spatial coordinates X: shape (N, 3)
         if self.is_spatial:
             self.X = self.rng.normal(0.0, 1.0, size=(self.N, 3)).astype(np.float32)
@@ -52,8 +56,8 @@ class UniversalSubstrate:
         This ensures nodes carry structural information without hardcoding.
         Shape: (N, 2*K)
         """
-        outgoing = np.sum(self.Z, axis=1)   # (N, K) — sum over j for Z[i,j,:]
-        incoming = np.sum(self.Z, axis=0)   # (N, K) — sum over i for Z[i,j,:]
+        outgoing = np.sum(self.Z * self.mask, axis=1)   # (N, K)
+        incoming = np.sum(self.Z * self.mask, axis=0)   # (N, K)
         return np.concatenate([outgoing, incoming], axis=-1)  # (N, 2*K)
 
     @property
@@ -64,15 +68,34 @@ class UniversalSubstrate:
         new_sub = UniversalSubstrate(self.N, self.K, self.is_spatial, self.rng)
         new_sub.Z = np.copy(self.Z)
         new_sub.X = np.copy(self.X)
+        new_sub.mask = np.copy(self.mask)
         return new_sub
 
     def mutate_pair_tensor(self, i: int, j: int, channel: int, delta: float,
                            bounds: Tuple[float, float] = (-2.0, 2.0)):
-        """
-        Discrete mutation of Z[i, j, channel].
-        """
+        """Discrete mutation of Z[i, j, channel]."""
         val = np.clip(self.Z[i, j, channel] + delta, bounds[0], bounds[1])
         self.Z[i, j, channel] = val
+        self.mask[i, j, channel] = 1.0 if abs(val) > 1e-4 else 0.0
+
+    def mutate_structural_topology(self, i: int, j: int, channel: int, mode: int):
+        """
+        Discrete structural MCTS move:
+          mode = 0: deactivate coupling (mask = 0)
+          mode = 1: activate positive coupling (mask = 1)
+          mode = 2: invert coupling sign / chirality (mask = -1)
+        """
+        if mode == 0:
+            self.mask[i, j, channel] = 0.0
+            self.mask[j, i, channel] = 0.0
+            self.Z[i, j, channel] = 0.0
+            self.Z[j, i, channel] = 0.0
+        elif mode == 1:
+            self.mask[i, j, channel] = 1.0
+            self.mask[j, i, channel] = 1.0
+        elif mode == 2:
+            self.mask[i, j, channel] = -1.0
+            self.mask[j, i, channel] = -1.0
 
     def compute_distance_matrix(self) -> np.ndarray:
         """SE(3)-invariant pairwise Euclidean distance matrix."""
@@ -86,5 +109,6 @@ class UniversalSubstrate:
         """
         z_bytes = np.round(self.Z, 3).tobytes()
         x_bytes = np.round(self.X, 3).tobytes() if self.is_spatial else b""
-        digest = hashlib.sha256(z_bytes + x_bytes).hexdigest()[:16]
+        m_bytes = np.round(self.mask, 1).tobytes()
+        digest = hashlib.sha256(z_bytes + x_bytes + m_bytes).hexdigest()[:16]
         return f"N{self.N}_K{self.K}_{digest}"

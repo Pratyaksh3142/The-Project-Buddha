@@ -19,7 +19,7 @@ from unified_universe.neural_pairformer import UnifiedIntuitionEngine
 
 class MCTSNode:
     __slots__ = ['substrate', 'parent', 'action_taken', 'prior',
-                 'visit_count', 'value_sum', 'children', 'is_expanded']
+                 'visit_count', 'value_sum', 'children', 'is_expanded', 'relaxed_eval']
 
     def __init__(self, substrate: UniversalSubstrate, parent=None,
                  action_taken: Optional[int] = None, prior: float = 0.0):
@@ -31,6 +31,7 @@ class MCTSNode:
         self.value_sum = 0.0
         self.children: Dict[int, 'MCTSNode'] = {}
         self.is_expanded = False
+        self.relaxed_eval: Optional[Dict[str, Any]] = None
 
     @property
     def q_value(self) -> float:
@@ -94,6 +95,8 @@ class UnifiedMCTSEngine:
         c_puct_log_base: float = 19652.0,
         dirichlet_alpha: float = 0.3,
         dirichlet_frac: float = 0.25,
+        bilevel: bool = True,
+        relax_steps: int = 15,
     ):
         self.referee = referee
         self.brain = brain
@@ -103,6 +106,8 @@ class UnifiedMCTSEngine:
         self.c_puct_log_base = c_puct_log_base
         self.dir_alpha = dirichlet_alpha
         self.dir_frac = dirichlet_frac
+        self.bilevel = bilevel
+        self.relax_steps = relax_steps
 
     def search(
         self,
@@ -128,10 +133,19 @@ class UnifiedMCTSEngine:
                 search_path.append(node)
                 depth += 1
 
-            # 2. EVALUATE: Ground in exact variational physics + neural intuition
+            # 2. EVALUATE: Bilevel Differentiable Inner Solver + Neural Intuition
+            if node.relaxed_eval is None:
+                node.relaxed_eval = self.referee.compute_action(
+                    node.substrate, relax=self.bilevel, steps=self.relax_steps
+                )
+            act_dict = node.relaxed_eval
+
+            if act_dict.get("is_stable", True):
+                phys_val = -np.tanh(act_dict["total_action"] / 10.0)
+            else:
+                phys_val = -1.0  # Vacuum instability penalty (rejects runaway theories)
+
             _, net_val, _ = self.brain.predict(node.substrate)
-            act_dict = self.referee.compute_action(node.substrate)
-            phys_val = -np.tanh(act_dict["total_action"] / 10.0)
             value = 0.5 * float(net_val) + 0.5 * float(phys_val)
 
             # 3. EXPAND if not at leaf boundary

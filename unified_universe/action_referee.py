@@ -13,6 +13,7 @@ The action functional S is purely the sum of fundamental variational energies.
 
 from typing import Dict, Any, Tuple
 import numpy as np
+from unified_universe.differentiable_solver import DifferentiableActionSolver
 
 
 class UniversalActionReferee:
@@ -20,6 +21,7 @@ class UniversalActionReferee:
     Computes the Universal Action Functional:
         S = E_quantum + α · E_spatial + β · E_algebra
     from first-principles matrix operations on the relational tensor Z and coordinates X.
+    Now equipped with the Differentiable Variational Inner Solver (Buddha v2.0).
     """
 
     def __init__(
@@ -33,6 +35,9 @@ class UniversalActionReferee:
         self.K = K
         self.alpha = alpha_spatial
         self.beta = beta_jacobi
+        self.differentiable_solver = DifferentiableActionSolver(
+            N=N, K=K, alpha_spatial=alpha_spatial, beta_jacobi=beta_jacobi
+        )
 
     # ─────────────────────────────────────────────────────────────
     # 1. ALGEBRAIC SYMMETRY & GAUGE CLOSURE
@@ -235,17 +240,47 @@ class UniversalActionReferee:
             "spectral_radius": spec_rad
         }
 
+    def relax_to_stationary(
+        self,
+        substrate,
+        steps: int = 25,
+        lr: float = 0.05
+    ) -> Tuple[float, float, bool, Dict[str, float]]:
+        """
+        Differentiable Inner Solver: relaxes continuous fields Z and X
+        to exact stationary action dS = 0 under the substrate's discrete mask.
+        Updates substrate.Z and substrate.X in place.
+        Returns:
+            (stationary_action, grad_norm, is_stable, observables)
+        """
+        mask = getattr(substrate, 'mask', np.ones_like(substrate.Z))
+        Z_star, X_star, s_star, g_norm, is_stable, obs = self.differentiable_solver.solve_stationary(
+            Z_init=substrate.Z,
+            X_init=substrate.X,
+            mask=mask,
+            steps=steps,
+            lr=lr
+        )
+        if is_stable:
+            substrate.Z = Z_star
+            substrate.X = X_star
+        return s_star, g_norm, is_stable, obs
+
     # ─────────────────────────────────────────────────────────────
     # UNIVERSAL ACTION FUNCTIONAL
     # ─────────────────────────────────────────────────────────────
-    def compute_action(self, substrate) -> Dict[str, Any]:
+    def compute_action(self, substrate, relax: bool = False, steps: int = 25) -> Dict[str, Any]:
         """
         Computes composite universal action functional:
             S = E_quantum + E_interaction + alpha * E_spatial + beta * E_algebra
         
         Strictly Variational.
-        ZERO cheat reward bonuses. ZERO domain thresholds.
+        If relax=True, executes the Differentiable Inner Solver to relax (Z, X)
+        to the exact stationary point δS = 0 before evaluation.
         """
+        if relax:
+            s_star, g_norm, is_stable, obs = self.relax_to_stationary(substrate, steps=steps)
+
         alg = self.evaluate_algebra(substrate)
         qm = self.evaluate_quantum(substrate)
         sp = self.evaluate_spatial(substrate)
@@ -258,10 +293,17 @@ class UniversalActionReferee:
             + self.beta * alg["algebra_loss"]
         )
 
-        return {
+        res = {
             "total_action": float(total_action),
             "quantum": qm,
             "spatial": sp,
             "algebra": alg,
             "topology": top
         }
+        if relax:
+            res["stationary_action"] = s_star
+            res["stationarity_grad_norm"] = g_norm
+            res["is_stable"] = is_stable
+            res["differentiable_observables"] = obs
+
+        return res
